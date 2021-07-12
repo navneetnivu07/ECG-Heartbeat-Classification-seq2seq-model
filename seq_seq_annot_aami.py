@@ -68,9 +68,11 @@ def read_mitbih(filename, max_time=100, classes= ['F', 'N', 'S', 'V', 'Q'], max_
         # _label = _label[permute]
         _data = np.concatenate((_data, data[_label]))
         _labels = np.concatenate((_labels, t_lables[_label]))
+    
+    print("here", (len(_data)// max_time) * max_time)
 
-    data = _data[:(len(_data)/ max_time) * max_time, :]
-    _labels = _labels[:(len(_data) / max_time) * max_time]
+    data = _data[:(len(_data)// max_time) * max_time, :]
+    _labels = _labels[:(len(_data) // max_time) * max_time]
 
     # data = _data
     #  split data into sublist of 100=se_len values
@@ -123,7 +125,7 @@ def batch_data(x, y, batch_size):
         yield x[start:start + batch_size], y[start:start + batch_size]
         start += batch_size
 def build_network(inputs, dec_inputs,char2numY,n_channels=10,input_depth=280,num_units=128,max_time=10,bidirectional=False):
-    _inputs = tf.reshape(inputs, [-1, n_channels, input_depth / n_channels])
+    _inputs = tf.reshape(inputs, [-1, n_channels, input_depth // n_channels])
     # _inputs = tf.reshape(inputs, [-1,input_depth,n_channels])
 
     # #(batch*max_time, 280, 1) --> (N, 280, 18)
@@ -261,9 +263,9 @@ def run_program(args):
     y_seq_length = len(Y[0])- 1
 
     # Placeholders
-    inputs = tf.placeholder(tf.float32, [None, max_time, input_depth], name = 'inputs')
-    targets = tf.placeholder(tf.int32, (None, None), 'targets')
-    dec_inputs = tf.placeholder(tf.int32, (None, None), 'output')
+    inputs = tf.compat.v1.placeholder(tf.float32, [None, max_time, input_depth], name = 'inputs')
+    targets = tf.compat.v1.placeholder(tf.int32, (None, None), 'targets')
+    dec_inputs = tf.compat.v1.placeholder(tf.int32, (None, None), 'output')
 
     # logits = build_network(inputs,dec_inputs=dec_inputs)
     logits = build_network(inputs, dec_inputs, char2numY, n_channels=n_channels, input_depth=input_depth, num_units=num_units, max_time=max_time,
@@ -300,8 +302,8 @@ def run_program(args):
     sm = SMOTE(random_state=12,ratio=ratio)
     X_train, y_train = sm.fit_sample(X_train, y_train)
 
-    X_train = X_train[:(X_train.shape[0]/max_time)*max_time,:]
-    y_train = y_train[:(X_train.shape[0]/max_time)*max_time]
+    X_train = X_train[:(X_train.shape[0]//max_time)*max_time,:]
+    y_train = y_train[:(X_train.shape[0]//max_time)*max_time]
 
     X_train = np.reshape(X_train,[-1,X_test.shape[1],X_test.shape[2]])
     y_train = np.reshape(y_train,[-1,y_test.shape[1]-1,])
